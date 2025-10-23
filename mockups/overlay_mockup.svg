@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675">
+  <rect width="1200" height="675" fill="#0b0e13"/>
+  <rect x="120" y="90" rx="20" width="260" height="520" fill="#e01b24" stroke="#b31217" stroke-width="6"/>
+  <rect x="245" y="140" rx="7" width="20" height="440" fill="#121722" stroke="#ffffff22" stroke-width="2"/>
+  <circle cx="255" cy="120" r="44" fill="#cfd3db" stroke="#00000044" stroke-width="4"/>
+  <circle cx="255" cy="120" r="32" fill="#ff6b6b"/>
+  <circle cx="255" cy="515" r="12" fill="#cfd3db"/>
+  <!-- Milestones -->
+  <g font-family="Inter,Arial" font-weight="800" font-size="24">
+    <rect x="390" y="90" width="180" height="40" rx="8" fill="#f5d90a"/><text x="480" y="118" text-anchor="middle">1,000,000</text>
+    <rect x="390" y="155" width="180" height="40" rx="8" fill="#f5d90a"/><text x="480" y="183" text-anchor="middle">750,000</text>
+    <rect x="390" y="220" width="180" height="40" rx="8" fill="#f5d90a"/><text x="480" y="248" text-anchor="middle">500,000</text>
+    <rect x="390" y="285" width="180" height="40" rx="8" fill="#f5d90a"/><text x="480" y="313" text-anchor="middle">250,000</text>
+    <rect x="390" y="350" width="180" height="40" rx="8" fill="#f5d90a"/><text x="480" y="378" text-anchor="middle">100,000</text>
+  </g>
+  <!-- Labels -->
+  <text x="140" y="640" fill="#9aa3b2" font-family="Inter,Arial" font-size="18">0</text>
+  <text x="320" y="640" fill="#9aa3b2" font-family="Inter,Arial" font-size="18">1,000,000</text>
+  <!-- HUD -->
+  <rect x="640" y="90" rx="20" width="440" height="520" fill="#121722" stroke="#ffffff14"/>
+  <text x="660" y="130" fill="#e6e9ef" font-family="Inter,Arial" font-size="20" font-weight="700">Controller (HUD Hidden in stream)</text>
+  <text x="660" y="165" fill="#9aa3b2" font-family="Inter,Arial" font-size="14">Quick Adds +10..+200 • Custom + Undo • Goal/Unit/Milestones</text>
+</svg>

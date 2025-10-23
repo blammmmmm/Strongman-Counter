@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><title>Strongman Counter – Docs</title>
+<link rel="stylesheet" href="./assets/styles.css" />
+<style> main{max-width:900px; margin:40px auto} code,kbd{background:#0f1422; padding:.1em .4em; border-radius:6px; border:1px solid rgba(255,255,255,.08)}
+h1{margin:0 0 12px 0} .muted{margin-top:6px}</style></head>
+<body><main class="card">
+<h1>Strongman Counter — Carnival Tower</h1>
+<p class="muted">Overlay + remote controller for OBS (Browser Source). Premium Carnival-Strongman design with buzzer animation at goal.</p>
+<ol>
+<li>Upload this repo to GitHub and enable <strong>Pages</strong> (main branch, root).</li>
+<li>In OBS, add a <strong>Browser Source</strong> with URL to <code>index.html?room=NAME</code>. Multiple rooms are isolated.</li>
+<li>Open <a href="./controller.html" target="_blank">controller.html</a>. Enter the same <kbd>room</kbd> and press <kbd>Connect</kbd>.</li>
+</ol>
+<h3>Features</h3>
+<ul>
+<li>Custom goal, milestones, unit label</li>
+<li>Quick-add buttons (+10 → +200), custom input, undo/reset</li>
+<li>Buzzer light animation at goal</li>
+<li>Local persistence per room; keyboard shortcuts</li>
+</ul>
+<h3>URL Params (Overlay)</h3>
+<pre>index.html?room=legday</pre>
+<h3>Keyboard Shortcuts (Controller)</h3>
+<p><kbd>1..0</kbd>=+10..+100, <kbd>Shift</kbd> adds +110..+200, <kbd>Z</kbd> undo, <kbd>R</kbd> reset.</p>
+</main></body></html>

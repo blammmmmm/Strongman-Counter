@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Strongman Controller</title>
+  <link rel="stylesheet" href="./assets/styles.css" />
+  <style>
+    .wrap{max-width:1100px; width:96vw}
+    .cols{display:grid; grid-template-columns: 1.2fr .8fr; gap:24px}
+    @media (max-width: 880px){ .cols{grid-template-columns:1fr} }
+    .grid-quick{display:grid; grid-template-columns:repeat(10, 1fr); gap:8px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="row" style="justify-content:space-between; align-items:center">
+      <div>
+        <div class="title">Strongman Controller</div>
+        <div class="muted">Operate the overlay. Set a <strong>room</strong> if you run multiple counters.</div>
+      </div>
+      <div class="row">
+        <input id="roomInput" type="text" placeholder="room (default)" style="width:220px">
+        <button id="connectBtn" class="primary">Connect</button>
+      </div>
+    </div>
+
+    <div class="cols">
+      <div class="card">
+        <div class="row">
+          <span class="pill">Total <span class="value" id="totalLabel">0</span></span>
+          <span class="pill">Goal <span class="value" id="goalLabel">1,000,000</span></span>
+          <span class="pill">Progress <span class="value" id="percentPill">0%</span></span>
+        </div>
+
+        <div class="row" style="margin-top:12px">
+          <input type="number" id="amtInput" placeholder="Enter amount" />
+          <button id="addBtn" class="primary">Add</button>
+          <button id="subBtn">Subtract</button>
+          <button id="undoBtn">Undo</button>
+          <button id="resetBtn">Reset</button>
+        </div>
+
+        <div class="muted" style="margin-top:8px">Quick add</div>
+        <div class="grid-quick" id="quick"></div>
+      </div>
+
+      <div class="card">
+        <div class="muted">Settings</div>
+        <div class="row" style="margin-top:8px">
+          <input id="goalInput" type="number" placeholder="Goal (e.g., 1000000)">
+          <button id="goalSet">Set Goal</button>
+        </div>
+        <div class="row">
+          <input id="unitInput" type="text" placeholder="Unit label (e.g., lbs)">
+          <button id="unitSet">Set Unit</button>
+        </div>
+        <div class="row">
+          <input id="milestonesInput" type="text" placeholder="Milestones CSV (100000,250000,...)">
+          <button id="milestonesSet">Set Milestones</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="muted">Shortcuts: 1..0 = +10..+100, Shift+1..0 = +110..+200, Z undo, R reset.</div>
+    </div>
+  </div>
+
+<script>
+  const el = id => document.getElementById(id);
+  let channel = null; let room = "default";
+  const state = { total:0, goal:1000000, unit:"", milestones:[100000,250000,500000,750000,1000000], history:[] };
+  const fmt = (n)=> n.toLocaleString();
+  const pct = ()=> Math.min(100, Math.max(0, (state.total / state.goal) * 100));
+  function save(){ localStorage.setItem("strongman-state-"+room, JSON.stringify(state)); }
+  function broadcast(){ if(channel){ channel.postMessage({type:"sync", payload: state}); } save(); render(); }
+  function render(){
+    el("totalLabel").textContent = fmt(state.total) + (state.unit? " "+state.unit:"");
+    el("goalLabel").textContent = fmt(state.goal);
+    el("percentPill").textContent = Math.round(pct())+"%";
+  }
+  function connect(){
+    if(channel) channel.close();
+    room = el("roomInput").value.trim() || "default";
+    channel = new BroadcastChannel("strongman-room-"+room);
+    // Respond to hello pings from overlays
+    channel.onmessage = (e)=>{ if(e.data && e.data.type==="hello"){ broadcast(); } };
+    // Load saved room state
+    const saved = localStorage.getItem("strongman-state-"+room);
+    if(saved){ try{ Object.assign(state, JSON.parse(saved)); }catch(e){} }
+    broadcast();
+  }
+  el("connectBtn").addEventListener("click", connect);
+  connect();
+
+  // quick buttons
+  const quick = el("quick");
+  for(let i=10;i<=200;i+=10){ const b = document.createElement("button"); b.textContent = "+"+i; b.onclick=()=>{ state.history.push(state.total); state.total += i; channel.postMessage({type:"nudge", payload:i}); broadcast(); }; quick.appendChild(b); }
+
+  el("addBtn").onclick = ()=>{ const v=parseInt(el("amtInput").value,10)||0; state.history.push(state.total); state.total+=v; channel.postMessage({type:"nudge", payload:v}); broadcast(); };
+  el("subBtn").onclick = ()=>{ const v=parseInt(el("amtInput").value,10)||0; state.history.push(state.total); state.total=Math.max(0,state.total-v); channel.postMessage({type:"nudge", payload:-v}); broadcast(); };
+  el("undoBtn").onclick = ()=>{ const prev = state.history.pop(); if(typeof prev!=="undefined"){ state.total = prev; broadcast(); } };
+  el("resetBtn").onclick = ()=>{ state.history.push(state.total); state.total = 0; broadcast(); };
+
+  el("goalSet").onclick = ()=>{ const v=parseInt(el("goalInput").value,10); if(Number.isFinite(v) && v>0){ state.goal=v; broadcast(); } };
+  el("unitSet").onclick = ()=>{ state.unit = el("unitInput").value || ""; broadcast(); };
+  el("milestonesSet").onclick = ()=>{
+    const arr = (el("milestonesInput").value||"").split(",").map(s=>parseInt(s.trim(),10)).filter(Boolean);
+    if(arr.length){ state.milestones = arr; broadcast(); }
+  };
+
+  window.addEventListener("keydown",(e)=>{
+    if(e.key==='z' || e.key==='Z'){ el("undoBtn").click(); }
+    if(e.key==='r' || e.key==='R'){ el("resetBtn").click(); }
+    const map = {'1':10,'2':20,'3':30,'4':40,'5':50,'6':60,'7':70,'8':80,'9':90,'0':100};
+    if(map[e.key]){ const add = map[e.key] + (e.shiftKey?100:0); state.history.push(state.total); state.total+=add; channel.postMessage({type:"nudge", payload:add}); broadcast(); }
+  });
+</script>
+</body>
+</html>

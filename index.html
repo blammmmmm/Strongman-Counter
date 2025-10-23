@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Strongman Overlay</title>
+  <link rel="stylesheet" href="./assets/styles.css" />
+  <style>
+    .wrap{display:grid; grid-template-columns: 1fr 340px; align-items:center}
+    .arena{display:flex; align-items:center; justify-content:center;}
+    @media (max-width: 920px){ .wrap{grid-template-columns: 1fr} }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card arena">
+      <div class="tower" id="tower">
+        <div class="buzzer-wrap" id="buzzer"><div class="buzzer-light"></div></div>
+        <div class="track"></div>
+        <div class="puck" id="puck" aria-hidden="true"></div>
+        <div class="fill" id="fill"></div>
+        <div class="milestones" id="milestones"></div>
+        <div class="labels"><span class="muted">0</span><span class="muted" id="goalLabel">1,000,000</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="title">Overlay is LIVE</div>
+      <div class="muted">Open <strong>controller.html</strong> (same repo) to operate. You can also call with <code>?room=NAME</code> to isolate multiple counters.</div>
+      <div class="row" style="margin-top:8px">
+        <a href="./controller.html" target="_blank"><button class="primary">Open Controller</button></a>
+        <a href="./readme.html" target="_blank"><button class="ghost">Docs</button></a>
+      </div>
+    </div>
+  </div>
+
+<script>
+  // --- Broadcast setup (room-scoped) ---
+  const params = new URLSearchParams(location.search);
+  const room = params.get("room") || "default";
+  const channel = new BroadcastChannel("strongman-room-" + room);
+
+  const el = id => document.getElementById(id);
+  const state = {
+    total: 0, goal: 1000000, unit: "", milestones: [100000, 250000, 500000, 750000, 1000000]
+  };
+  const fmt = (n)=> n.toLocaleString();
+  const pct = ()=> Math.min(100, Math.max(0, (state.total / state.goal) * 100));
+  function render(){
+    document.documentElement.style.setProperty("--tower-height","540px");
+    el("puck").style.bottom = `calc(12px + ${(pct())}% * (var(--tower-height) - 64px)/100)`;
+    el("fill").style.height = `calc(${pct()}% * (var(--tower-height) - 64px)/100)`;
+    el("goalLabel").textContent = fmt(state.goal);
+    const box = el("milestones"); box.innerHTML = "";
+    [...state.milestones].sort((a,b)=>b-a).forEach(v=>{
+      const t = document.createElement("div"); t.className="tile"; t.textContent = fmt(v); box.appendChild(t);
+    });
+    el("buzzer").classList.toggle("buzz-anim", state.total >= state.goal);
+  }
+  function apply(msg){
+    if(msg.type === "sync"){ Object.assign(state, msg.payload); render(); }
+    if(msg.type === "nudge"){ state.total = Math.max(0, state.total + msg.payload); render(); }
+  }
+  channel.onmessage = (e)=> apply(e.data);
+
+  // Pull initial state via localStorage (room-scoped), then ask controller to broadcast
+  const saved = localStorage.getItem("strongman-state-"+room);
+  if(saved){ try{ Object.assign(state, JSON.parse(saved)); }catch(e){} }
+  render();
+  channel.postMessage({type:"hello"});
+</script>
+</body>
+</html>
