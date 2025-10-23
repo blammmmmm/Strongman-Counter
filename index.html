@@ -1,183 +1,305 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Strongman Overlay — Glassy</title>
-  <style>
-    :root{
-      --accent:#c81414;      /* tower body red */
-      --accent-2:#ffd84a;    /* milestone tiles yellow */
-      --tower-width:130px;
-      --tower-height:640px;
-    }
-    *{box-sizing:border-box}
-    html,body{
-      padding:0; margin:0;
-      background:transparent;   /* REQUIRED for OBS transparency */
-      height:100%;
-    }
-    .wrap{display:flex; align-items:center; justify-content:center; width:100%; height:100%;}
-    .tower{
-      position:relative;
-      width:var(--tower-width);
-      height:var(--tower-height);
-      border-radius:20px;
-      background:
-        linear-gradient(180deg, rgba(255,255,255,.22), rgba(255,255,255,0) 40%),
-        radial-gradient(120px 50% at 50% 0%, rgba(255,255,255,.25), transparent 70%),
-        linear-gradient(90deg, #7a0f14 0%, var(--accent) 35%, #7a0f14 100%);
-      box-shadow:
-        inset 0 10px 24px rgba(255,255,255,.18),
-        inset 0 -10px 26px rgba(0,0,0,.35),
-        0 24px 80px rgba(0,0,0,.45);
-      border:2px solid rgba(255,255,255,.18);
-      outline:1px solid #7a0f14bb;
-      display:flex;
-      align-items:flex-end;
-      justify-content:center;
-      overflow:hidden;
-    }
-    .tower::after{
-      content:"";
-      position:absolute;
-      inset:0;
-      border-radius:20px;
-      pointer-events:none;
-      background:linear-gradient(180deg,rgba(255,255,255,.28),rgba(255,255,255,0) 18%,rgba(255,255,255,0) 82%,rgba(255,255,255,.2));
-      mix-blend-mode:screen;
-    }
-    .track{
-      position:absolute;
-      left:50%; transform:translateX(-50%);
-      bottom:18px; top:86px;
-      width:18px; border-radius:999px;
-      background:
-        linear-gradient(180deg, rgba(255,255,255,.25), rgba(255,255,255,0)),
-        linear-gradient(180deg, #111418, #1b2330);
-      box-shadow:
-        inset 0 0 0 2px rgba(255,255,255,.1),
-        inset 0 10px 22px rgba(255,255,255,.12);
-    }
-    .fill{
-      position:absolute; left:50%; transform:translateX(-50%);
-      bottom:18px; width:18px; height:0;
-      background:
-        linear-gradient(180deg, rgba(255,255,255,.3), rgba(255,255,255,0)),
-        linear-gradient(180deg, #ffe675, #ffc400);
-      border-radius:999px;
-      box-shadow:
-        0 0 20px rgba(255,214,0,.4),
-        inset 0 8px 16px rgba(255,255,255,.25);
-      transition:height .6s cubic-bezier(.22,1,.36,1);
-    }
-    .puck{
-      position:absolute; left:50%; transform:translateX(-50%);
-      width:26px; height:26px; bottom:18px;
-      background:radial-gradient(circle at 35% 30%,#fff,#f7f2d6 35%,#f2d77c 60%,#d2a600 100%);
-      border-radius:999px;
-      box-shadow:0 8px 16px rgba(0,0,0,.55), 0 0 0 2px rgba(255,255,255,.35);
-      transition:bottom .6s cubic-bezier(.22,1,.36,1);
-    }
-    .milestones{
-      position:absolute;
-      right: calc(var(--tower-width) * -0.8);
-      top:4px; bottom:4px;
-      display:flex;
-      flex-direction:column;
-      justify-content:space-between;
-    }
-    .tile{
-      width:170px; min-height:40px;
-      display:flex; align-items:center; justify-content:center;
-      border-radius:12px;
-      background:
-        linear-gradient(180deg, rgba(255,255,255,.65), rgba(255,255,255,.15) 28%, rgba(0,0,0,.06) 100%),
-        linear-gradient(180deg, var(--accent-2), #ffcc1a);
-      color:#2b1e00; font-weight:900;
-      box-shadow:inset 0 2px 0 rgba(255,255,255,.85), 0 10px 24px rgba(0,0,0,.25);
-    }
-    .buzzer-wrap{
-      position:absolute; top:-30px; left:50%; transform:translateX(-50%);
-      width:100px; height:100px; border-radius:999px;
-      background:radial-gradient(circle at 50% 30%,#fff 0%,#eef1f6 35%,#c9cfda 65%,#505662 100%);
-      box-shadow:0 24px 36px rgba(0,0,0,.35), inset 0 4px 10px rgba(255,255,255,.7);
-      display:grid; place-items:center;
-    }
-    .buzzer-light{
-      width:78px; height:78px; border-radius:999px;
-      background:radial-gradient(circle at 50% 36%,#fff5f5 0%,#ff6b6b 40%,#b20000 100%);
-      box-shadow:inset 0 14px 34px rgba(255,255,255,.5), 0 0 0 5px rgba(255,0,0,.18);
-    }
-    .buzz-anim .buzzer-light{ animation:buzz 1s ease-out both; }
-    @keyframes buzz{
-      0%{box-shadow:inset 0 16px 38px rgba(255,255,255,.6),0 0 0 0 rgba(255,214,0,.0);}
-      35%{box-shadow:inset 0 16px 38px rgba(255,255,255,.65),0 0 30px 12px rgba(255,214,0,.65);}
-      100%{box-shadow:inset 0 16px 38px rgba(255,255,255,.6),0 0 0 0 rgba(255,214,0,.0);}
-    }
-    .labels{
-      position:absolute; left:10px; right:10px; bottom:10px;
-      display:flex; justify-content:space-between; font-size:12px; color:#fff9;
-    }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Strongman Overlay — Vegas Glass (Premium)</title>
+<style>
+  :root{
+    --tower-w: 170px;   /* override with ?width= */
+    --tower-h: 820px;   /* override with ?height= */
+    --red:   #c81414;   /* body red */
+    --gold:  #ffd84a;   /* LED pills + progress bar */
+    --chrome:#a9b0bd;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:transparent}  /* fully transparent for OBS */
+
+  .stage{
+    position:relative; width:var(--tower-w); height:var(--tower-h);
+    margin:auto; display:flex; align-items:center; justify-content:center;
+    /* subtle outer bloom so it pops without a background */
+    filter:
+      drop-shadow(0 30px 60px rgba(255, 55, 0, .14))
+      drop-shadow(0 10px 30px rgba(255, 200, 0, .18));
+  }
+
+  /* ===== Tower: glassy red + chrome lip ===== */
+  .tower{
+    position:relative; width:100%; height:100%; border-radius:24px; overflow:hidden;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.24), rgba(255,255,255,0) 42%),
+      radial-gradient(120% 70% at 50% -10%, rgba(255,255,255,.22), transparent 65%),
+      linear-gradient(90deg, #6f0e10 0%, var(--red) 36%, #6f0e10 100%);
+    border: 2px solid rgba(255,255,255,.25);
+    outline: 1px solid #7a0f14cc;
+    box-shadow: inset 0 12px 26px rgba(255,255,255,.18), inset 0 -18px 34px rgba(0,0,0,.44);
+  }
+  /* slow shimmer highlight */
+  .tower:after{
+    content:""; position:absolute; inset:0; pointer-events:none; border-radius:inherit;
+    background: linear-gradient(100deg, transparent 0%, rgba(255,255,255,.22) 48%, transparent 60%) 0/200% 100% no-repeat;
+    animation: sweep 7s linear infinite;
+    mix-blend-mode:screen;
+  }
+  @keyframes sweep{ 0%{background-position:-120% 0} 100%{background-position:120% 0} }
+
+  /* firelight glow from base */
+  .tower:before{
+    content:""; position:absolute; left:-25%; right:-25%; bottom:-12%;
+    height:44%; border-radius:50%;
+    background: radial-gradient(50% 60% at 50% 100%, rgba(255,190,40,.28), rgba(255,60,0,.10) 50%, transparent 72%);
+    filter: blur(10px);
+    pointer-events:none;
+  }
+
+  /* ===== Track ===== */
+  .track{
+    position:absolute; left:50%; transform:translateX(-50%);
+    top:120px; bottom:100px; width:24px; border-radius:999px;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.25), rgba(255,255,255,0)),
+      linear-gradient(180deg, #15181e, #1b2432);
+    box-shadow: inset 0 0 0 2px rgba(255,255,255,.10), inset 0 14px 22px rgba(255,255,255,.10);
+  }
+
+  /* yellow progress BAR climbing inside track */
+  .fill{
+    position:absolute; left:50%; transform:translateX(-50%); bottom:100px;
+    width:24px; height:0; border-radius:999px;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.35), rgba(255,255,255,0)),
+      linear-gradient(180deg, #ffe675, #ffc400);
+    box-shadow: 0 0 30px rgba(255,214,0,.46), inset 0 8px 16px rgba(255,255,255,.25);
+    transition: height .7s cubic-bezier(.22,1,.36,1);
+  }
+
+  /* golden puck cap riding the bar */
+  .puck{
+    position:absolute; left:50%; transform:translateX(-50%); bottom:100px;
+    width:32px; height:32px; border-radius:999px;
+    background: radial-gradient(circle at 35% 30%, #fff, #f7f2d6 35%, #f2d77c 60%, #d2a600 100%);
+    box-shadow: 0 10px 20px rgba(0,0,0,.55), 0 0 0 2px rgba(255,255,255,.35);
+    transition: bottom .7s cubic-bezier(.22,1,.36,1);
+  }
+
+  /* LED marquee numbers inside the glass */
+  .ticks{ position:absolute; inset:0; pointer-events:none; }
+  .tick{
+    position:absolute; right:10px; transform:translateY(50%);
+    display:flex; align-items:center; justify-content:center;
+    min-width:66px; height:30px; padding:0 10px; border-radius:12px;
+    color:#2b1e00; font: 900 14px/1 system-ui, -apple-system, Segoe UI, Inter, Roboto, Arial;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.70), rgba(255,255,255,.18) 28%, rgba(0,0,0,.06) 100%),
+      linear-gradient(180deg, var(--gold), #ffcc1a);
+    box-shadow: inset 0 2px 0 rgba(255,255,255,.85), 0 8px 18px rgba(0,0,0,.25);
+    text-shadow: 0 1px 0 rgba(255,255,255,.65);
+    border: 1px solid rgba(0,0,0,.25);
+  }
+
+  /* buzzer (chrome cup + lamp) */
+  .buzzer{
+    position:absolute; top:-36px; left:50%; transform:translateX(-50%);
+    width:120px; height:120px; border-radius:999px; display:grid; place-items:center;
+    background: radial-gradient(circle at 50% 30%, #fff 0%, #eef1f6 35%, #c9cfda 65%, #505662 100%);
+    border:2px solid rgba(0,0,0,.28);
+    box-shadow: 0 28px 38px rgba(0,0,0,.35), inset 0 4px 10px rgba(255,255,255,.72);
+  }
+  .buzzer .lamp{
+    width:92px; height:92px; border-radius:999px;
+    background: radial-gradient(circle at 50% 36%, #fff5f5 0%, #ff6b6b 40%, #b20000 100%);
+    box-shadow: inset 0 16px 34px rgba(255,255,255,.5), 0 0 0 5px rgba(255,0,0,.18);
+  }
+  .buzz{ animation: buzz 1.05s ease-out both; }
+  @keyframes buzz{
+    0%  { box-shadow: inset 0 16px 38px rgba(255,255,255,.6), 0 0 0 0 rgba(255,214,0,0); }
+    35% { box-shadow: inset 0 16px 38px rgba(255,255,255,.66), 0 0 36px 14px rgba(255,214,0,.70); }
+    100%{ box-shadow: inset 0 16px 38px rgba(255,255,255,.6), 0 0 0 0 rgba(255,214,0,0); }
+  }
+
+  /* labels (0 / goal) tucked into bottom edge */
+  .labels{
+    position:absolute; left:10px; right:10px; bottom:12px;
+    display:flex; justify-content:space-between; font: 700 12px/1 system-ui, Inter;
+    color:#fff8; text-shadow: 0 1px 0 rgba(0,0,0,.48); pointer-events:none;
+  }
+
+  /* FX canvases */
+  canvas.fx{ position:absolute; inset:0; pointer-events:none; }
+</style>
 </head>
 <body>
-<div class="wrap">
-  <div class="tower" id="tower">
-    <div class="buzzer-wrap" id="buzzer"><div class="buzzer-light"></div></div>
-    <div class="track"></div>
-    <div class="fill" id="fill"></div>
-    <div class="puck" id="puck"></div>
-    <div class="milestones" id="milestones"></div>
-    <div class="labels"><span>0</span><span id="goalLabel">1,000,000</span></div>
+  <div class="stage" id="stage">
+    <div class="tower" id="tower">
+      <div class="buzzer" id="buzzer"><div class="lamp" id="lamp"></div></div>
+      <div class="track" id="track"></div>
+      <div class="fill" id="fill"></div>
+      <div class="puck" id="puck"></div>
+      <div class="ticks" id="ticks"></div>
+      <div class="labels"><span>0</span><span id="goalLabel">1,000,000</span></div>
+      <canvas class="fx" id="confetti"></canvas>
+      <canvas class="fx" id="sparks"></canvas>
+    </div>
   </div>
-</div>
 
 <script>
-const params = new URLSearchParams(location.search);
-const room = params.get("room") || "default";
-const height = parseInt(params.get("height"),10) || 640;
-document.documentElement.style.setProperty("--tower-height", height+"px");
+/* ===== Params ===== */
+const url  = new URLSearchParams(location.search);
+const room = url.get("room") || "default";
+const W    = parseInt(url.get("width"),10)  || 170;
+const H    = parseInt(url.get("height"),10) || 820;
+document.documentElement.style.setProperty("--tower-w", W+"px");
+document.documentElement.style.setProperty("--tower-h", H+"px");
 
+/* ===== State ===== */
+const state = { total:0, goal:1000000, milestones:[100000,250000,500000,750000,1000000] };
 const channel = new BroadcastChannel("strongman-room-"+room);
-const st = { total:0, goal:1000000, milestones:[100000,250000,500000,750000,1000000] };
 
-const puck = document.getElementById("puck");
-const fill = document.getElementById("fill");
-const bzr  = document.getElementById("buzzer");
+/* ===== Elements/metrics ===== */
+const tower = document.getElementById("tower");
+const track = document.getElementById("track");
+const fill  = document.getElementById("fill");
+const puck  = document.getElementById("puck");
+const buzzer= document.getElementById("buzzer");
+const lamp  = document.getElementById("lamp");
+const ticks = document.getElementById("ticks");
 const goalLabel = document.getElementById("goalLabel");
-const milestoneBox = document.getElementById("milestones");
 
-function pct(){ return Math.min(100, Math.max(0,(st.total / st.goal)*100)); }
-function fmt(n){ return n.toLocaleString(); }
+function trackPixels(){ return tower.clientHeight - 120 - 100; } // usable px of track
 
-function render(){
-  const usable = (height - 100);
-  const px = Math.round((pct()/100)*usable);
-  fill.style.height = px+"px";
-  puck.style.bottom = (18 + px)+"px";
-  goalLabel.textContent = fmt(st.goal);
-  milestoneBox.innerHTML = "";
-  [...st.milestones].sort((a,b)=>b-a).forEach(v=>{
-    const t=document.createElement("div");
-    t.className="tile";
-    t.textContent = fmt(v);
-    milestoneBox.appendChild(t);
+/* ===== Helpers ===== */
+const fmt = n => n.toLocaleString();
+const pct = () => Math.min(100, Math.max(0, (state.total/state.goal)*100));
+
+/* ===== Build LED ticks (10/25/50/75/100) ===== */
+function buildTicks(){
+  ticks.innerHTML = "";
+  const marks = [10,25,50,75,100];
+  const usable = trackPixels();
+  marks.forEach(p=>{
+    const y = 120 + (p/100)*usable;               // absolute from top of tower
+    const fromBottom = H - 100 - y;               // convert to CSS "bottom" offset
+    const el = document.createElement("div");
+    el.className = "tick";
+    el.style.bottom = fromBottom + "px";
+    el.textContent = p;
+    ticks.appendChild(el);
   });
-  bzr.classList.toggle("buzz-anim", st.total >= st.goal);
 }
 
-channel.onmessage = e=>{
-  const m=e.data;
-  if(m.type==="sync"){ Object.assign(st,m.payload); render(); }
-  if(m.type==="nudge"){ st.total=Math.max(0,st.total+m.payload); render(); }
-  if(m.type==="buzz"){ bzr.classList.add("buzz-anim"); setTimeout(()=>bzr.classList.remove("buzz-anim"),1000); }
+/* ===== Confetti (burst + rain) ===== */
+const conf = document.getElementById("confetti");
+const cctx = conf.getContext("2d");
+let confetti = [];
+function confettiResize(){ conf.width = tower.clientWidth; conf.height = tower.clientHeight; }
+function confettiBurst(){
+  const cx = W/2, cy = 65; // near the buzzer
+  // Burst
+  for(let i=0;i<90;i++){
+    confetti.push({
+      x:cx, y:cy, vx:(Math.random()*2-1)*3.3, vy:(Math.random()*-2-2)*3.4,
+      g:0.16+Math.random()*0.05, s:3+Math.random()*3,
+      c: Math.random()<0.5 ? "#ffd84a":"#fff4b8",
+      life: 120+Math.random()*70, rot:Math.random()*Math.PI, vr:(Math.random()-.5)*0.22
+    });
+  }
+  // Rain
+  for(let i=0;i<80;i++){
+    confetti.push({
+      x:Math.random()*W, y:cy+10, vx:(Math.random()-.5)*0.8, vy:1+Math.random()*1.2,
+      g:0.19, s:2.5+Math.random()*3, c:"#ffd84a", life: 240+Math.random()*120, rot:0, vr:(Math.random()-.5)*0.1
+    });
+  }
+}
+function confettiLoop(){
+  cctx.clearRect(0,0,conf.width,conf.height);
+  for(let i=confetti.length-1;i>=0;i--){
+    const p = confetti[i];
+    p.life--; if(p.life<=0){ confetti.splice(i,1); continue; }
+    p.vy += p.g; p.x += p.vx; p.y += p.vy; p.rot += p.vr;
+    cctx.save(); cctx.translate(p.x,p.y); cctx.rotate(p.rot);
+    cctx.fillStyle = p.c; cctx.fillRect(-p.s/2,-p.s/2,p.s,p.s*0.6);
+    cctx.restore();
+  }
+  requestAnimationFrame(confettiLoop);
+}
+
+/* ===== Spark trails while moving ===== */
+const sparks = document.getElementById("sparks");
+const sctx = sparks.getContext("2d");
+let sparkPts = []; let lastP = 0;
+function sparksResize(){ sparks.width = tower.clientWidth; sparks.height = tower.clientHeight; }
+function addSparks(bottomPx){
+  for(let i=0;i<12;i++){
+    sparkPts.push({
+      x: W/2 + (Math.random()*2-1)*8,
+      y: bottomPx,
+      vx:(Math.random()*2-1)*0.6,
+      vy:-1.2 - Math.random()*0.6,
+      life: 30+Math.random()*20,
+      size: 1.5 + Math.random()*1.5
+    });
+  }
+}
+function sparksLoop(){
+  sctx.clearRect(0,0,sparks.width,sparks.height);
+  for(let i=sparkPts.length-1;i>=0;i--){
+    const p = sparkPts[i]; p.life--;
+    if(p.life<=0){ sparkPts.splice(i,1); continue; }
+    p.x+=p.vx; p.y+=p.vy; p.vy+=0.05;
+    const a = Math.max(0, p.life/50);
+    sctx.fillStyle = `rgba(255,215,120,${a})`;
+    sctx.beginPath(); sctx.arc(p.x,p.y,p.size,0,Math.PI*2); sctx.fill();
+  }
+  requestAnimationFrame(sparksLoop);
+}
+
+/* ===== Render ===== */
+function render(){
+  const usable = trackPixels();
+  const p = pct();
+  const px = Math.round((p/100)*usable);
+  fill.style.height = px + "px";
+  puck.style.bottom = (100 + px) + "px";
+  goalLabel.textContent = fmt(state.goal);
+
+  // spark trail when % increases
+  if(p > lastPct){
+    const bottomPx = tower.clientHeight - (100 + px);
+    addSparks(tower.clientHeight - (100 + px) + 12);
+  }
+  lastPct = p;
+
+  // buzzer flash if at/over goal
+  if(state.total >= state.goal){
+    lamp.classList.add("buzz");
+    confettiBurst();
+    setTimeout(()=>lamp.classList.remove("buzz"), 1050);
+  }
+}
+let lastPct = 0;
+
+/* ===== Messaging ===== */
+channel.onmessage = (e)=>{
+  const m = e.data;
+  if(m.type==="sync"){ Object.assign(state,m.payload); render(); }
+  if(m.type==="nudge"){ state.total = Math.max(0,state.total+m.payload); render(); }
+  if(m.type==="buzz"){ lamp.classList.add("buzz"); confettiBurst(); setTimeout(()=>lamp.classList.remove("buzz"),1050); }
 };
 
-const saved=localStorage.getItem("strongman-state-"+room);
-if(saved){ try{ Object.assign(st,JSON.parse(saved)); }catch(e){} }
-render();
-channel.postMessage({type:"hello"});
+/* ===== Init ===== */
+function init(){
+  buildTicks();
+  confettiResize(); sparksResize();
+  const saved = localStorage.getItem("strongman-state-"+room);
+  if(saved){ try{ Object.assign(state, JSON.parse(saved)); }catch(e){} }
+  render();
+  channel.postMessage({type:"hello"});
+  confettiLoop(); sparksLoop();
+}
+window.addEventListener("resize", ()=>{ confettiResize(); sparksResize(); buildTicks(); render(); });
+init();
 </script>
 </body>
 </html>
