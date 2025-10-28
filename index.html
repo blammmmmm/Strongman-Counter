@@ -3,276 +3,233 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Strongman Tower — Premium Overlay</title>
+<title>Strongman Pill — Premium Overlay</title>
 <style>
   :root{
-    /* Sidebar footprint (tall + slender) */
-    --w: 220px;           /* was 180 */
-    --h: 980px;           /* taller for readability */
+    /* Medium footprint (your pick “B”) */
+    --w: 200px;       /* width */
+    --h: 900px;       /* height */
 
-    /* Lacquer red → candy yellow gradient fill */
-    --fill-top: #ffe57a;
-    --fill-mid: #ffb734;
-    --fill-bot: #e31313;
+    /* Pill + fill (candy red, non-orange) */
+    --fill-top: #ff5a5a;
+    --fill-mid: #ff1e1e;
+    --fill-bot: #a80000;
 
-    /* Champagne chrome (no rivets) */
-    --chrome-hi: #f4e6c4;   /* bright edge */
-    --chrome-mid:#dbcaa3;
-    --chrome-lo: #9d8c6c;
+    /* Thin chrome outline */
+    --rim-outer: #f2e7c9;   /* champagne highlight */
+    --rim-inner: #9e8e6f;
 
-    /* Plaques */
-    --plaqueA:#f3e4b6; --plaqueB:#c8b07a; --plaqueTxt:#1a160d;
+    /* Gold plaque (brushed) */
+    --gold-a: #f4e3b2;
+    --gold-b: #cdb079;
+    --gold-c: #b5965e;
+    --gold-text: #1a1408;
 
-    /* Text */
-    --txt:#fff;
+    /* Labels */
+    --label-bg-a:#f3e4b6;
+    --label-bg-b:#c8b07a;
+    --label-text:#1a160d;
   }
 
   html,body{height:100%;margin:0;background:transparent;overflow:hidden}
-  body{display:flex;align-items:center;justify-content:center;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
+  body{display:flex;align-items:center;justify-content:center;
+       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial}
 
-  .wrap{
-    position:relative; width:var(--w); height:var(--h);
-    isolation:isolate;
+  .wrap{ position:relative; width:var(--w); height:var(--h); isolation:isolate; }
+
+  /* ======= TOP GOAL PLAQUE (brushed gold, rectangular) ======= */
+  .plaque-top{
+    position:absolute; top:-64px; left:50%; transform:translateX(-50%);
+    min-width: calc(var(--w) * 0.9);
+    padding:10px 14px;
+    border-radius:10px;
+    color:var(--gold-text); font-weight:900; font-size:18px; text-align:center;
+    background:
+      linear-gradient(180deg, var(--gold-a), var(--gold-b)),
+      repeating-linear-gradient(0deg, rgba(255,255,255,.15) 0 2px, rgba(255,255,255,0) 2px 6px);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.8),
+      inset 0 -1px 0 rgba(0,0,0,.25),
+      0 10px 26px rgba(0,0,0,.35);
+    border:1px solid rgba(0,0,0,.25);
   }
+  .plaque-top .small{ font-weight:800; font-size:12px; opacity:.8 }
 
-  /* =============== FRAME (SVG) =============== */
-  svg.frame{position:absolute; inset:0; filter: drop-shadow(0 18px 40px rgba(0,0,0,.42));}
-
-  /* gradients for chrome */
-  .edge{
-    fill:url(#chromeBand);
+  /* ======= PILL FRAME ======= */
+  .pill{
+    position:absolute; inset:0;
+    display:flex; align-items:flex-end; justify-content:center;
   }
-  .edgeInner{
-    fill:none; stroke:url(#chromeRim); stroke-width:2.2;
-    filter: drop-shadow(0 2px 2px rgba(0,0,0,.35));
-  }
-
-  /* =============== FILL COLUMN =============== */
-  .well{
-    position:absolute; left:22px; right:22px; bottom:30px; top:210px;
-    border-radius:16px;
+  .shell{
+    position:absolute; left:0; right:0; top:0; bottom:0;
+    border-radius: calc(var(--w) * 0.5);
     background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,0));
-    box-shadow: inset 0 6px 20px rgba(0,0,0,.32), inset 0 -12px 30px rgba(0,0,0,.35);
-    overflow:hidden;
+    box-shadow:
+      inset 0 10px 30px rgba(0,0,0,.30),
+      inset 0 -18px 36px rgba(0,0,0,.35),
+      0 20px 40px rgba(0,0,0,.35);
   }
+  /* thin chrome/metal edge */
+  .rim{
+    pointer-events:none; position:absolute; inset:0;
+    border-radius: calc(var(--w) * 0.5);
+    box-shadow:
+      0 0 0 2px var(--rim-outer),
+      0 0 0 4px rgba(158,142,111,.20);
+  }
+  /* inner rim hint */
+  .rim::after{
+    content:""; position:absolute; inset:10px;
+    border-radius: calc(var(--w) * 0.5 - 10px);
+    box-shadow: inset 0 0 0 1.5px var(--rim-inner);
+    opacity:.65;
+  }
+
+  /* ======= FILL ======= */
   .fill{
-    position:absolute; left:0; right:0; bottom:0; height:0%;
+    position:absolute; left:10px; right:10px; bottom:10px;
+    height:0%;
+    border-radius: calc(var(--w) * 0.45);
     background: linear-gradient(to top, var(--fill-bot), var(--fill-mid) 45%, var(--fill-top) 100%);
     transition: height .45s cubic-bezier(.22,.9,.24,1);
   }
-  /* candy gloss stripe */
+  /* gloss band + moving sheen for premium feel */
   .fill::before{
     content:""; position:absolute; inset:0;
-    background: linear-gradient(95deg, rgba(255,255,255,.35), rgba(255,255,255,0) 35%);
-    mix-blend-mode:overlay; opacity:.5; pointer-events:none;
+    background: linear-gradient(100deg, rgba(255,255,255,.35), rgba(255,255,255,0) 38%);
+    mix-blend-mode:overlay; opacity:.4; pointer-events:none;
   }
-  /* subtle moving sheen */
   .fill::after{
     content:""; position:absolute; left:-100%; top:0; bottom:0; width:60%;
-    background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.18), rgba(255,255,255,0));
-    animation: sheen 5.2s linear infinite;
+    background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.16), rgba(255,255,255,0));
+    animation: sheen 5.5s linear infinite;
   }
-  @keyframes sheen{
-    0%{transform:translateX(0)}
-    100%{transform:translateX(260%)}
-  }
+  @keyframes sheen{ 0%{transform:translateX(0)} 100%{transform:translateX(260%)} }
 
-  /* =============== MARQUEE (curved “1 MILLION”) =============== */
-  .marquee{ position:absolute; top:0; left:0; right:0; height:190px; pointer-events:none; }
-  .marquee svg{ width:100%; height:100%; }
-  .marquee text{
-    font-weight:900; letter-spacing:.6px; fill:#ffeec2;
-    paint-order:stroke; stroke:#9f8656; stroke-width:3.5;
-    filter: drop-shadow(0 2px 8px rgba(0,0,0,.6));
+  /* ======= TICKS + PLAQUES ======= */
+  .ruler{ position:absolute; inset:20px 6px 20px 6px; pointer-events:none; }
+  .tick{ position:absolute; left:14px; right:14px; height:1px; background:linear-gradient(90deg, rgba(255,255,255,.25), rgba(255,255,255,0)); }
+  .label{
+    position:absolute; right:10px; transform:translateY(50%);
+    min-width: 92px; padding:6px 8px; border-radius:8px;
+    background: linear-gradient(180deg, var(--label-bg-a), var(--label-bg-b));
+    color: var(--label-text); font-weight:800; font-size:13px; text-align:center;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.75), 0 2px 0 rgba(0,0,0,.22), 0 10px 18px rgba(0,0,0,.22);
   }
-
-  /* buzzer flash */
-  .buzzer{ position:absolute; top:16px; left:50%; transform:translateX(-50%); width:150px; height:78px; border-radius:0 0 140px 140px/0 0 78px 78px; }
-  .buzzer.flash{ animation: buzz .9s ease-out }
-  @keyframes buzz{
-    0%{ filter: drop-shadow(0 0 0 rgba(255,232,140,0)) }
-    25%{ filter: drop-shadow(0 0 30px rgba(255,232,140,.95)) }
-    100%{ filter: drop-shadow(0 0 0 rgba(255,232,140,0)) }
-  }
-
-  /* =============== PLAQUES & TICKS =============== */
-  .ruler{ position:absolute; inset:210px 12px 30px 12px; pointer-events:none; }
-  .tick{ position:absolute; left:10px; right:10px; height:1px; background:linear-gradient(90deg, rgba(255,255,255,.22), rgba(255,255,255,0)); }
-  .plaque{
-    position:absolute; right:4px; transform:translateY(50%);
-    min-width: 96px; padding:8px 10px; border-radius:9px;
-    background: linear-gradient(180deg, var(--plaqueA), var(--plaqueB));
-    color:var(--plaqueTxt); font-weight:800; font-size:14px; text-align:center;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.75), 0 2px 0 rgba(0,0,0,.25), 0 10px 18px rgba(0,0,0,.25);
-  }
-  .plaque.pop{ animation: pop .65s ease-out }
+  .label.pop{ animation: pop .65s ease-out }
   @keyframes pop{ 0%{transform:translateY(50%) scale(1)} 25%{transform:translateY(50%) scale(1.07)} 100%{transform:translateY(50%) scale(1)} }
 
-  /* =============== NUMBERS =============== */
-  .nums{ position:absolute; top:196px; left:0; right:0; text-align:center; color:var(--txt); text-shadow:0 2px 10px rgba(0,0,0,.6) }
-  .nums .curr{ font-size:26px; font-weight:900 }
-  .nums .goal{ font-size:15px; opacity:.85 }
-
-  /* =============== CONFETTI =============== */
-  canvas#confetti{ position:absolute; inset:0; pointer-events:none }
-
-  /* =============== DEBUG PANEL (optional) =============== */
-  .panel{
-    position:absolute; top:0; right:-290px; width:270px; padding:10px; background:rgba(15,15,20,.92);
-    color:#fff; border:1px solid rgba(255,255,255,.18); border-radius:12px; font-size:13px;
+  /* ======= NUMBERS ======= */
+  .nums{
+    position:absolute; top:-26px; left:0; right:0; text-align:center;
+    color:#fff; text-shadow: 0 2px 10px rgba(0,0,0,.55);
   }
-  .row{ margin:8px 0 }
-  input[type="number"]{ width:130px; padding:7px 8px; border-radius:10px; border:1px solid #3a3f4a; background:#0e1117; color:#fff }
-  button{ padding:8px 10px; border-radius:10px; border:0; background:#ffe07a; color:#151515; font-weight:800; cursor:pointer; margin:2px }
+  .nums .curr{ font-size:22px; font-weight:900 }
+  .nums .goal{ font-size:14px; opacity:.85 }
+
+  /* ======= CONFETTI (goal) ======= */
+  canvas#confetti{ position:absolute; inset:0; pointer-events:none }
 </style>
 </head>
 <body>
 <div class="wrap" id="wrap" aria-hidden="true">
-
-  <!-- ===== CHROME FRAME (FLARED, UPWARD) ===== -->
-  <svg class="frame" viewBox="0 0 220 980" preserveAspectRatio="none" aria-hidden="true">
-    <defs>
-      <linearGradient id="chromeBand" x1="0" y1="0" x2="1" y2="0">
-        <stop offset="0"  stop-color="#f7edd2"/>
-        <stop offset="0.18" stop-color="#e8dab4"/>
-        <stop offset="0.45" stop-color="#cdb88b"/>
-        <stop offset="0.7" stop-color="#f1e2c3"/>
-        <stop offset="1"  stop-color="#b89e71"/>
-      </linearGradient>
-      <linearGradient id="chromeRim" x1="0" y1="0" x2="1" y2="0">
-        <stop offset="0" stop-color="#fff6de"/>
-        <stop offset="1" stop-color="#9d8c6c"/>
-      </linearGradient>
-    </defs>
-
-    <!-- Upward flare arch (wider than tower) -->
-    <path class="edge" d="M20,210
-                           Q110,70 200,210
-                           L200,242
-                           Q110,108 20,242 Z"/>
-
-    <!-- Inner rim hint -->
-    <path class="edgeInner" d="M30,220 Q110,95 190,220"/>
-
-    <!-- Side rails + bottom cap -->
-    <rect class="edge" x="20"  y="242" width="10" height="708" rx="6"/>
-    <rect class="edge" x="190" y="242" width="10" height="708" rx="6"/>
-    <rect class="edge" x="24" y="930" width="172" height="12" rx="6"/>
-
-    <!-- Seamless dome (no rivets; clean) -->
-    <ellipse cx="110" cy="120" rx="82" ry="48" fill="url(#chromeBand)"/>
-  </svg>
-
-  <!-- ===== MARQUEE TEXT (curved) ===== -->
-  <div class="marquee">
-    <svg viewBox="0 0 220 190">
-      <path id="arcPath" d="M18,150 Q110,36 202,150" fill="none"/>
-      <text dy="-6"><textPath xlink:href="#arcPath" startOffset="50%" text-anchor="middle">1&nbsp;MILLION</textPath></text>
-    </svg>
+  <!-- top goal plaque -->
+  <div class="plaque-top" id="topPlaque">
+    <div style="font-size:12px; opacity:.9; font-weight:800;">GOAL</div>
+    <div id="topPlaqueText">1,000,000</div>
   </div>
 
-  <!-- ===== BUZZER EFFECT (flash only) ===== -->
-  <div class="buzzer" id="buzzer"></div>
-
-  <!-- ===== WELL + FILL ===== -->
-  <div class="well"><div class="fill" id="fill"></div></div>
-
-  <!-- ===== RULER / PLAQUES (injected by JS) ===== -->
-  <div class="ruler" id="ruler"></div>
-
-  <!-- ===== NUMBERS ===== -->
+  <!-- readout (current / goal) right under plaque -->
   <div class="nums">
     <div class="curr" id="curr">0</div>
     <div class="goal" id="goalTxt">/ 1,000,000</div>
   </div>
 
-  <!-- ===== CONFETTI ===== -->
-  <canvas id="confetti" width="220" height="980"></canvas>
-
-  <!-- ===== OPTIONAL PANEL (?panel=1) ===== -->
-  <div class="panel" id="panel" hidden>
-    <div class="row"><b>Overlay Test Panel</b></div>
-    <div class="row">Goal: <input id="goalInput" type="number" value="1000000"></div>
-    <div class="row">Set current: <input id="currInput" type="number" value="0"> <button onclick="uiSet()">Set</button></div>
-    <div class="row">
-      <button onclick="applyInc(10)">+10</button>
-      <button onclick="applyInc(20)">+20</button>
-      <button onclick="applyInc(50)">+50</button>
-      <button onclick="applyInc(100)">+100</button>
-      <button onclick="applyInc(200)">+200</button>
-    </div>
-    <div class="row">Custom + <input id="customInc" type="number" value="0"> <button onclick="applyCustom()">Go</button></div>
-    <div class="row"><button onclick="resetAll()">Reset</button></div>
+  <!-- pill -->
+  <div class="pill">
+    <div class="shell"></div>
+    <div class="fill" id="fill"></div>
+    <div class="rim"></div>
   </div>
+
+  <!-- ticks + side labels -->
+  <div class="ruler" id="ruler"></div>
+
+  <!-- confetti on goal -->
+  <canvas id="confetti" width="200" height="900"></canvas>
 </div>
 
 <script>
-/* ---------- Broadcast channel ---------- */
+/* ========== Controller / BroadcastChannel integration ========== */
 const qs = new URLSearchParams(location.search);
 const room = qs.get('room') || 'strongman';
-const showPanel = qs.get('panel') === '1';
 const chan = new BroadcastChannel('room:'+room);
 
-/* ---------- State ---------- */
+/* ========== State ========== */
 let current = 0;
 let goal = 1_000_000;
 
 const wrap   = document.getElementById('wrap');
 const fill   = document.getElementById('fill');
-const buzzer = document.getElementById('buzzer');
 const currEl = document.getElementById('curr');
 const goalEl = document.getElementById('goalTxt');
 const ruler  = document.getElementById('ruler');
-const panel  = document.getElementById('panel');
-if (showPanel) panel.hidden = false;
+const topPlaqueText = document.getElementById('topPlaqueText');
 
-/* ---------- Plaques & ticks ---------- */
-function makePlaques(){
+/* ========== Helpers ========== */
+function fmt(n){ return (n||0).toLocaleString(); }
+function clamp01(x){ return Math.max(0, Math.min(1, x)); }
+function pctToY(p){ // inside pill area (with 10px inset)
+  const top = 10, bottom = wrap.clientHeight - 10;
+  return top + (bottom - top) * p;
+}
+
+/* ========== Build ticks + plaques (5 milestones) ========== */
+function buildRuler(){
   ruler.innerHTML = '';
-  const N = 5; // 5 premium milestones (100k, 250k, 500k, 750k, goal if 1M)
+  const N = 5;
   for (let i=0;i<=N;i++){
-    const pct = i/N;
-    const y = mapPctToY(1-pct);
-    const tick = document.createElement('div');
-    tick.className = 'tick';
-    tick.style.top = `${y}px`;
-    ruler.appendChild(tick);
+    const p = 1 - (i/N);
+    const y = pctToY(p);
+    const t = document.createElement('div');
+    t.className = 'tick'; t.style.top = `${y}px`;
+    ruler.appendChild(t);
 
     if (i>0){
-      const p = document.createElement('div');
-      p.className = 'plaque';
-      const val = Math.round(goal * pct);
-      p.textContent = val.toLocaleString();
-      p.style.top = `${y}px`;
-      ruler.appendChild(p);
+      const lab = document.createElement('div');
+      lab.className = 'label';
+      lab.style.top = `${y}px`;
+      const value = Math.round(goal * (i/N));
+      lab.textContent = fmt(value);
+      ruler.appendChild(lab);
     }
   }
 }
 
-function mapPctToY(p){ // p: 0..1 -> position inside ruler box
-  const top = 210, bottom = wrap.clientHeight - 30;
-  return top + (bottom - top) * p;
-}
-
-/* ---------- Update visuals ---------- */
+/* ========== Update visuals ========== */
+let lastMilestoneIdx = 0;
 function update(){
-  const pct = Math.max(0, Math.min(100, (current/goal)*100));
-  fill.style.height = pct + '%';
-  currEl.textContent = current.toLocaleString();
-  goalEl.textContent = '/ ' + goal.toLocaleString();
+  const pct = clamp01(current/goal);
+  fill.style.height = (pct * 100) + '%';
+  currEl.textContent = fmt(current);
+  goalEl.textContent = '/ ' + fmt(goal);
+  topPlaqueText.textContent = fmt(goal);
 }
 
-/* ---------- FX: confetti + plaque pop + buzzer ---------- */
+function resetMilestones(idx = Math.floor((current/goal)*5)){
+  lastMilestoneIdx = idx;
+}
+
+/* ========== Goal FX (confetti) ========== */
 const confetti = document.getElementById('confetti');
 const ctx = confetti.getContext('2d');
 let confettiPieces = [];
-
-function burstConfetti(count=180){
+function burstConfetti(count=200){
   const W = confetti.width, H = confetti.height;
   confettiPieces.length = 0;
   for (let i=0;i<count;i++){
     confettiPieces.push({
-      x: Math.random()*W, y: 40 + Math.random()*100,
+      x: Math.random()*W, y: 20 + Math.random()*120,
       vx: (Math.random()-0.5)*2, vy: (Math.random()*2)+1,
       s: Math.random()*2+1, a: 1, c: `hsl(${Math.random()*360},95%,60%)`
     });
@@ -292,51 +249,43 @@ function stepConfetti(){
   if (alive) requestAnimationFrame(stepConfetti);
 }
 
-let lastMilestoneIdx = 0;
+/* ========== Milestone pops ========== */
 function checkMilestones(force=false){
   const idx = Math.floor((current/goal)*5); // 0..5
   if (force){ lastMilestoneIdx = idx; return; }
   if (idx>lastMilestoneIdx){
     lastMilestoneIdx = idx;
-    const plaques = [...ruler.querySelectorAll('.plaque')];
-    const p = plaques[idx-1];
-    if (p){ p.classList.remove('pop'); void p.offsetWidth; p.classList.add('pop'); }
+    const labels = [...ruler.querySelectorAll('.label')];
+    const L = labels[idx-1];
+    if (L){ L.classList.remove('pop'); void L.offsetWidth; L.classList.add('pop'); }
   }
 }
 function checkGoal(){
-  if (current >= goal){
-    buzzer.classList.remove('flash'); void buzzer.offsetWidth; buzzer.classList.add('flash');
-    burstConfetti();
-  }
+  if (current >= goal){ burstConfetti(); }
 }
 
-/* ---------- Controller support ---------- */
+/* ========== Messages from controller ========== */
 chan.onmessage = (e)=>{
   const {type, value, amount} = e.data||{};
   switch(type){
     case 'inc': current += (amount|0); checkMilestones(); update(); checkGoal(); break;
     case 'dec': current = Math.max(0, current - (amount|0)); checkMilestones(true); update(); break;
     case 'set': current = Math.max(0,(value|0)); checkMilestones(true); update(); break;
-    case 'goal': goal = Math.max(1,(value|0)); makePlaques(); checkMilestones(true); update(); break;
-    case 'reset': current = 0; checkMilestones(true); update(); break;
+    case 'goal': goal = Math.max(1,(value|0)); buildRuler(); resetMilestones(); update(); break;
+    case 'reset': current = 0; resetMilestones(0); update(); break;
   }
 };
 
-/* ---------- Optional local test panel ---------- */
-function applyInc(n){ current += n; checkMilestones(); update(); checkGoal(); }
-function applyCustom(){ const v = parseInt(document.getElementById('customInc').value||'0',10); if (!v) return; current += v; checkMilestones(); update(); checkGoal(); }
-function uiSet(){ const v = parseInt(document.getElementById('currInput').value||'0',10); current = Math.max(0,v); checkMilestones(true); update(); }
-function resetAll(){ current = 0; checkMilestones(true); update(); }
-
-/* ---------- Init ---------- */
+/* ========== Init ========== */
 function resizeCanvas(){
   const r = wrap.getBoundingClientRect();
-  confetti.width = Math.max(220, Math.round(r.width));
-  confetti.height = Math.max(980, Math.round(r.height));
+  confetti.width = Math.max(parseInt(getComputedStyle(wrap).width), 200);
+  confetti.height = Math.max(parseInt(getComputedStyle(wrap).height), 900);
 }
 window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
-makePlaques();
+buildRuler();
+resetMilestones(0);
 update();
 </script>
 </body>
