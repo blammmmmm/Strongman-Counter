@@ -8,16 +8,12 @@
   :root{
     --w: 200px; --h: 900px;
 
-    /* Red fill */
     --fill-top:#ff5a5a; --fill-mid:#ff1e1e; --fill-bot:#a80000;
 
-    /* Thin chrome */
     --rim-outer:#f2e7c9; --rim-inner:#9e8e6f;
 
-    /* Gold plaque */
     --gold-a:#f4e3b2; --gold-b:#cdb079; --gold-text:#1a1408;
 
-    /* Labels */
     --label-bg-a:#f3e4b6; --label-bg-b:#c8b07a; --label-text:#1a160d;
   }
 
@@ -26,7 +22,6 @@
        font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
   .wrap{position:relative;width:var(--w);height:var(--h);isolation:isolate}
 
-  /* Top counter plaque (NOW shows TOTAL/current) */
   .plaque-top{
     position:absolute; top:-64px; left:50%; transform:translateX(-50%);
     min-width:calc(var(--w)*0.9); padding:10px 14px; border-radius:10px;
@@ -37,14 +32,8 @@
     border:1px solid rgba(0,0,0,.25);
     box-shadow:inset 0 1px 0 rgba(255,255,255,.75), inset 0 -1px 0 rgba(0,0,0,.25), 0 10px 26px rgba(0,0,0,.35);
   }
-  .plaque-top .small{font-size:12px;font-weight:800;opacity:.85} /* now says TOTAL */
+  .plaque-top .small{font-size:12px;font-weight:800;opacity:.85}
 
-  /* Readout under plaque (kept: current/goal) */
-  .nums{position:absolute; top:-26px; left:0; right:0; text-align:center; color:#fff; text-shadow:0 2px 10px rgba(0,0,0,.55)}
-  .nums .curr{font-size:22px;font-weight:900}
-  .nums .goal{font-size:14px;opacity:.85}
-
-  /* Pill */
   .pill{position:absolute; inset:0}
   .shell{
     position:absolute; left:0; right:0; top:0; bottom:0;
@@ -57,7 +46,6 @@
   .rim::after{content:""; position:absolute; inset:10px; border-radius:calc(var(--w)*0.5 - 10px);
               box-shadow:inset 0 0 0 1.5px var(--rim-inner); opacity:.6}
 
-  /* Fill */
   .fill{
     position:absolute; left:10px; right:10px; bottom:10px; height:0%;
     border-radius:calc(var(--w)*0.45);
@@ -71,7 +59,6 @@
   }
   @keyframes sheen{0%{transform:translateX(0)}100%{transform:translateX(260%)}}
 
-  /* Glass highlight + edge vignette */
   .glass{pointer-events:none; position:absolute; left:10px; right:10px; top:10px; bottom:10px;
          border-radius:calc(var(--w)*0.45);
          background:
@@ -82,11 +69,10 @@
             border-radius:calc(var(--w)*0.45);
             box-shadow:inset 0 0 40px rgba(0,0,0,.18), inset 0 0 80px rgba(0,0,0,.12)}
 
-  /* Ruler */
   .ruler{position:absolute; inset:20px 6px 20px 6px; pointer-events:none}
   .tick{position:absolute; left:14px; right:14px; height:1px; background:linear-gradient(90deg,rgba(255,255,255,.25),rgba(255,255,255,0))}
   .label{
-    position:absolute; left:50%; transform:translate(-50%,50%); /* centered */
+    position:absolute; left:50%; transform:translate(-50%,50%);
     min-width:92px; padding:6px 8px; border-radius:8px;
     background:linear-gradient(180deg,var(--label-bg-a),var(--label-bg-b));
     color:var(--label-text); font-weight:800; font-size:13px; text-align:center;
@@ -100,19 +86,12 @@
 </head>
 <body>
 <div class="wrap" id="wrap" aria-hidden="true">
-  <!-- TOP LIVE COUNTER -->
+
   <div class="plaque-top">
     <div class="small">TOTAL</div>
-    <div id="topPlaqueText">0</div> <!-- live current -->
+    <div id="topPlaqueText">0</div>
   </div>
 
-  <!-- readout (kept for clarity) -->
-  <div class="nums">
-    <div class="curr" id="curr">0</div>
-    <div class="goal" id="goalTxt">/ 1,000,000</div>
-  </div>
-
-  <!-- Pill -->
   <div class="pill">
     <div class="shell"></div>
     <div class="fill" id="fill"></div>
@@ -121,74 +100,74 @@
     <div class="rim"></div>
   </div>
 
-  <!-- Ticks + centered milestones -->
   <div class="ruler" id="ruler"></div>
 
-  <!-- Confetti -->
   <canvas id="confetti" width="200" height="900"></canvas>
 </div>
 
 <script>
-/* BroadcastChannel */
-const qs = new URLSearchParams(location.search);
-const room = qs.get('room') || 'strongman';
-const chan = new BroadcastChannel('room:'+room);
+const qs=new URLSearchParams(location.search);
+const room=qs.get('room')||'strongman';
+const chan=new BroadcastChannel('room:'+room);
 
-/* State */
-let current = 0;
-let goal = 1_000_000;
+let current=0;
+let goal=1_000_000;
 
-const wrap   = document.getElementById('wrap');
-const fill   = document.getElementById('fill');
-const currEl = document.getElementById('curr');
-const goalEl = document.getElementById('goalTxt');
-const ruler  = document.getElementById('ruler');
-const topPlaqueText = document.getElementById('topPlaqueText');
+const wrap=document.getElementById('wrap');
+const fill=document.getElementById('fill');
+const ruler=document.getElementById('ruler');
+const topPlaqueText=document.getElementById('topPlaqueText');
 
-const fmt = n => (n||0).toLocaleString();
-const clamp01 = x => Math.max(0, Math.min(1, x));
-function pctToY(p){ const top=10, bottom=wrap.clientHeight-10; return top + (bottom-top)*p; }
+const fmt=n=>(n||0).toLocaleString();
+const clamp01=x=>Math.max(0,Math.min(1,x));
+function pctToY(p){const top=10,bottom=wrap.clientHeight-10;return top+(bottom-top)*p;}
 
-/* Build ticks + centered labels
-   Start at 0.5*step (50k if goal=1M), then step, 2*step, ... goal */
 function buildRuler(){
-  ruler.innerHTML = '';
-  const step = goal/10; // 10% increments
-  const values = [0.5*step, ...Array.from({length:9},(_,i)=>(i+1)*step), goal]; // 50k,100k..900k,1M
-  const ticks = 6; // keep 6 guide ticks (0..100%)
-  for (let i=0;i<=ticks;i++){
-    const y = pctToY(1 - i/ticks);
-    const t = document.createElement('div'); t.className='tick'; t.style.top=`${y}px`; ruler.appendChild(t);
+  ruler.innerHTML='';
+  const step=goal/10;
+  const values=[...Array.from({length:9},(_,i)=>(i+1)*step),goal]; // 100k..goal
+  const ticks=6;
+  for(let i=0;i<=ticks;i++){
+    const y=pctToY(1-i/ticks);
+    const t=document.createElement('div'); t.className='tick'; t.style.top=`${y}px`; ruler.appendChild(t);
   }
-  // labels
   for (const v of values){
-    const pct = v/goal;
-    const y = pctToY(1 - pct);
-    const lab = document.createElement('div');
-    lab.className='label'; lab.style.top=`${y}px`; lab.textContent = fmt(Math.round(v));
+    const pct=v/goal;
+    if (pct<=0) continue;
+    const y=pctToY(1-pct);
+    const lab=document.createElement('div'); lab.className='label'; lab.style.top=`${y}px`;
+    lab.textContent=fmt(Math.round(v));
     ruler.appendChild(lab);
   }
 }
 
-/* Update visuals */
-let lastMilestoneIdx = 0;
+let lastMilestoneIdx=0;
 function update(){
-  const pct = clamp01(current/goal);
-  fill.style.height = (pct*100) + '%';
-  currEl.textContent = fmt(current);
-  goalEl.textContent = '/ ' + fmt(goal);
-  topPlaqueText.textContent = fmt(current); // GOLD PLAQUE shows TOTAL/current
+  const pct=clamp01(current/goal);
+  fill.style.height=(pct*100)+'%';
+  topPlaqueText.textContent=fmt(current);
 }
-function resetMilestones(idx=Math.floor((current/goal)*10)){ lastMilestoneIdx = idx; }
+function resetMilestones(idx=Math.floor((current/goal)*10)){lastMilestoneIdx=idx;}
 
-/* Confetti on goal */
-const confetti = document.getElementById('confetti');
-const ctx = confetti.getContext('2d');
+function checkMilestones(force=false){
+  const idx=Math.floor((current/goal)*10);
+  if(force){lastMilestoneIdx=idx;return;}
+  if(idx>lastMilestoneIdx){
+    lastMilestoneIdx=idx;
+    const step=goal/10;
+    const targetVal=Math.round(idx*step);
+    const labs=[...ruler.querySelectorAll('.label')];
+    for(const L of labs){if(L.textContent.replace(/,/g,'')==String(targetVal)){L.classList.remove('pop');void L.offsetWidth;L.classList.add('pop');break;}}
+  }
+}
+
+const confetti=document.getElementById('confetti');
+const ctx=confetti.getContext('2d');
 let confettiPieces=[];
 function burstConfetti(count=200){
-  const W = confetti.width;
+  const W=confetti.width;
   confettiPieces.length=0;
-  for (let i=0;i<count;i++){
+  for(let i=0;i<count;i++){
     confettiPieces.push({x:Math.random()*W,y:20+Math.random()*120,vx:(Math.random()-0.5)*2,vy:(Math.random()*2)+1,s:Math.random()*2+1,a:1,c:`hsl(${Math.random()*360},95%,60%)`});
   }
   requestAnimationFrame(stepConfetti);
@@ -196,50 +175,35 @@ function burstConfetti(count=200){
 function stepConfetti(){
   ctx.clearRect(0,0,confetti.width,confetti.height);
   let alive=false;
-  for (const p of confettiPieces){
-    p.x+=p.vx; p.y+=p.vy; p.vy+=0.02; p.a-=0.004;
-    if (p.a>0) alive=true;
-    ctx.globalAlpha=Math.max(0,p.a); ctx.fillStyle=p.c; ctx.fillRect(p.x,p.y,p.s,p.s*3);
+  for(const p of confettiPieces){
+    p.x+=p.vx;p.y+=p.vy;p.vy+=0.02;p.a-=0.004;
+    if(p.a>0)alive=true;
+    ctx.globalAlpha=Math.max(0,p.a);
+    ctx.fillStyle=p.c;ctx.fillRect(p.x,p.y,p.s,p.s*3);
   }
-  ctx.globalAlpha=1; if (alive) requestAnimationFrame(stepConfetti);
+  ctx.globalAlpha=1;if(alive)requestAnimationFrame(stepConfetti);
 }
 
-/* Milestone pops (every 10%) */
-function checkMilestones(force=false){
-  const idx = Math.floor((current/goal)*10); // 0..10
-  if (force){ lastMilestoneIdx = idx; return; }
-  if (idx>lastMilestoneIdx){
-    lastMilestoneIdx = idx;
-    // pop nearest label (centered), find by value text
-    const labs = [...ruler.querySelectorAll('.label')];
-    const step = goal/10;
-    const targetVal = Math.round(idx*step);
-    for (const L of labs){ if (L.textContent.replace(/,/g,'') == String(targetVal)){ L.classList.remove('pop'); void L.offsetWidth; L.classList.add('pop'); break; } }
-  }
-}
-function checkGoal(){ if (current >= goal){ burstConfetti(); } }
+function checkGoal(){ if(current>=goal){ burstConfetti(); } }
 
-/* Controller messages */
 function onMsg(e){
-  const {type, value, amount} = e.data||{};
+  const {type,value,amount}=e.data||{};
   switch(type){
-    case 'inc': current += (amount|0); checkMilestones(); update(); checkGoal(); break;
-    case 'dec': current = Math.max(0, current - (amount|0)); checkMilestones(true); update(); break;
-    case 'set': current = Math.max(0,(value|0)); checkMilestones(true); update(); break;
-    case 'goal': goal = Math.max(1,(value|0)); buildRuler(); resetMilestones(); update(); break;
-    case 'reset': current = 0; resetMilestones(0); update(); break;
+    case 'inc':current+=(amount|0);checkMilestones();update();checkGoal();break;
+    case 'dec':current=Math.max(0,current-(amount|0));checkMilestones(true);update();break;
+    case 'set':current=Math.max(0,(value|0));checkMilestones(true);update();break;
+    case 'goal':goal=Math.max(1,(value|0));buildRuler();resetMilestones();update();break;
+    case 'reset':current=0;resetMilestones(0);update();break;
   }
 }
-const chan2 = new BroadcastChannel('room:'+room);
-chan.onmessage = onMsg; chan2.onmessage = onMsg;
+chan.onmessage=onMsg;
 
-/* Init */
 function resizeCanvas(){
-  const r = wrap.getBoundingClientRect();
-  confetti.width = Math.max(parseInt(getComputedStyle(wrap).width),200);
-  confetti.height= Math.max(parseInt(getComputedStyle(wrap).height),900);
+  const r=wrap.getBoundingClientRect();
+  confetti.width=Math.max(parseInt(getComputedStyle(wrap).width),200);
+  confetti.height=Math.max(parseInt(getComputedStyle(wrap).height),900);
 }
-window.addEventListener('resize', resizeCanvas);
+window.addEventListener('resize',resizeCanvas);
 resizeCanvas();
 buildRuler();
 resetMilestones(0);
